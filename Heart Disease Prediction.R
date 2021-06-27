@@ -3,7 +3,9 @@ library(ggplot2)
 
 # import dataset
 
-data <- read.csv("C:\\Users\\lvlip\\Documents\\BCSI Sem 4\\IBM 3201\\Assignment\\heart_disease_uci.csv")
+# data <- read.csv("C:\\Users\\lvlip\\Documents\\BCSI Sem 4\\IBM 3201\\Assignment\\heart_disease_uci.csv")
+
+data <- read.csv(file.choose(), header=TRUE)
 
 # attribute selection - exclude "id" and "dataset"
 
@@ -171,5 +173,23 @@ boxplot(thalch~num,
 heart <- heart[-which(heart$oldpeak <= 0 & !is.na(heart$oldpeak)),]
 boxplot(heart$oldpeak)
 
+# the presence of heart disease with oldpeak outliers
+
+heart[which(heart$oldpeak %in% out_oldpeak), c('oldpeak', 'num')] # most outliers have heart disease
+
+# check the maximum acceptable value of oldpeak
+
+oldpeakq3 <- quantile(heart$oldpeak, probs=0.75, na.rm=TRUE)
+oldpeakq3
+
+oldpeakmax <- oldpeakq3 + 1.5 * IQR(heart$oldpeak, na.rm=TRUE)
+oldpeakmax
+
+# check presence of heart disease with value around oldpeakmax
+
+heart[which(heart$oldpeak >= 3.0 & heart$oldpeak < oldpeakmax), c('oldpeak', 'num')] # most have heart disease
+
 # replace outliers of oldpeak
 
+heart$oldpeak = ifelse(heart$oldpeak > oldpeakmax, oldpeakq3, heart$oldpeak)
+boxplot(heart$oldpeak)
