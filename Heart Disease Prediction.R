@@ -98,6 +98,11 @@ out_chol
 out_thalch = boxplot(heart$thalch)$out
 out_thalch
 
+# outliers of oldpeak
+
+out_oldpeak = boxplot(heart$oldpeak)$out
+out_oldpeak
+
 # DEAL WITH OUTLIERS
 # replace outliers with q1 and q3
 
@@ -151,3 +156,20 @@ heart$thalch = ifelse(heart$thalch < thalchmin, thalchq1, heart$thalch)
 
 boxplot(heart$thalch)
 summary(heart)
+
+boxplot(thalch~num,
+        data=heart,
+        main="Boxplot for Thalch",
+        xlab="Presence of Disease",
+        ylab="Frequency",
+        col="orange",
+        border="brown"
+)
+
+# remove oldpeak with negative value
+
+heart <- heart[-which(heart$oldpeak <= 0 & !is.na(heart$oldpeak)),]
+boxplot(heart$oldpeak)
+
+# replace outliers of oldpeak
+
