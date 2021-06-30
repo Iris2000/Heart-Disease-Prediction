@@ -1,5 +1,6 @@
 library(dplyr)
 library(ggplot2)
+library(tidyverse)
 
 # import dataset
 
@@ -11,6 +12,10 @@ data <- read.csv(file.choose(), header=TRUE)
 
 heart <- select(data, c("age", "sex", "cp", "trestbps", "chol", "fbs", "restecg", "thalch",
                         "exang", "oldpeak", "slope", "ca", "thal", "num"))
+
+heart_complete <- na.omit(heart) # 303 rows without missing values
+
+heart_na <- heart[rowSums(is.na(heart)) > 0,] # 617 rows with missing values
 
 # check the structure and summary
 
@@ -62,6 +67,10 @@ levels(heart$restecg)[levels(heart$restecg)=='NA'] <- NA
 levels(heart$slope)[levels(heart$slope)=='NA'] <- NA
 levels(heart$thal)[levels(heart$thal)=='NA'] <- NA
 
+heart_complete <- na.omit(heart) # 299 rows without missing values
+
+heart_na <- heart[rowSums(is.na(heart)) > 0,] # 621 rows with missing values
+
 summary(heart)
 
 # CHECK THE OUTLIERS
@@ -104,6 +113,15 @@ out_thalch
 
 out_oldpeak = boxplot(heart$oldpeak)$out
 out_oldpeak
+
+# REMOVE DUPLICATION
+
+heart[duplicated(heart),] # 2 duplicated rows detected
+heart <- heart[!duplicated(heart),]
+
+heart_complete <- na.omit(heart) # 299 rows without missing values
+
+heart_na <- heart[rowSums(is.na(heart)) > 0,] # 619 rows with missing values 
 
 # DEAL WITH OUTLIERS
 # replace outliers with q1 and q3
@@ -170,8 +188,15 @@ boxplot(thalch~num,
 
 # remove oldpeak with negative value
 
-heart <- heart[-which(heart$oldpeak <= 0 & !is.na(heart$oldpeak)),]
+heart <- heart[-which(heart$oldpeak < 0 & !is.na(heart$oldpeak)),] # remove 12 rows
 boxplot(heart$oldpeak)
+
+hist(sqrt(heart$oldpeak))
+summary(heart)
+
+heart_complete <- na.omit(heart) # 299 rows without missing values
+
+heart_na <- heart[rowSums(is.na(heart)) > 0,] # 607 rows with missing values
 
 # the presence of heart disease with oldpeak outliers
 
@@ -193,3 +218,20 @@ heart[which(heart$oldpeak >= 3.0 & heart$oldpeak < oldpeakmax), c('oldpeak', 'nu
 
 heart$oldpeak = ifelse(heart$oldpeak > oldpeakmax, oldpeakq3, heart$oldpeak)
 boxplot(heart$oldpeak)
+
+# CHECK MISSING VALUES
+
+sapply(heart, function(x) sum(is.na(x)))
+
+# data frame without missing values
+
+heart_complete <- na.omit(heart) # 299 rows without missing values
+heart_complete
+
+heart_na <- heart[rowSums(is.na(heart)) > 0,] # 607 rows with missing values
+heart_na
+
+# fill missing value in restecg with most frequent value
+
+heart$restecg[is.na(heart$restecg)] <- "Normal"
+summary(heart)
